@@ -8,13 +8,16 @@
 
 ## 1. Episodic Knowledge (事例・経験知)
 **【難易度: 低】**
-「過去にこういう状況でこう対処した」という個別のエピソード記憶です。抽象化されていない生の経験データであり、類似事例の検索に利用されます。
+
+「過去にこういう状況でこう対処した」という個別のエピソード記憶です。抽象化されていない生の経験データであり、**類似事例検索による問題解決（類推）** に利用されます。ログ・FAQ・チケット・障害記録など、既存データを活用しやすく、最も着手しやすい領域です。
 
 - **構造化のゴール**: **Structured Case Frame (構造化ケース)**
 - **学術的手法・アプローチ**:
-  - **Neural Case-Based Reasoning (Neural CBR)** / **CBR-RAG**
-    - 古典的なCBR（事例ベース推論）のプロセス（Retrieve, Reuse, Revise, Retain）をLLMで強化するアプローチ。
-    - LLMの文脈理解力を用いて、事例の検索（Retrieval）と現在の状況への修正適用（Adaptation）を行う。
+  - **Case-Based Reasoning (CBR)** / **Example-based RAG / CBR-RAG**
+    - 古典的なCBR（Retrieve, Reuse, Revise, Retain）をLLMで強化するアプローチ。
+    - LLMの文脈理解力を用いて、事例検索（Retrieval）と現在状況への適用（Adaptation）を行う。
+  - **Neural CBR**
+    - 類似度計算や適応をニューラルモデルで高度化する拡張形。
 
 ### 構造化データの例 (JSON)
 ```json
@@ -26,22 +29,27 @@
   "outcome": "油温が低下し、動作速度が正常化した"
 }
 ```
+
 > **参考文献**:
-> - *Das, R., et al. "Case-based Reasoning for Better Generalization in Text Generation." (ICLR 2023)*
-> - *Lewis, P., et al. "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks." (NeurIPS 2020)*
+> - Das, R., et al. *Case-based Reasoning for Better Generalization in Text Generation.* (ICLR 2023)
+> - Lewis, P., et al. *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.* (NeurIPS 2020)
 
 ---
 
 ## 2. Procedural Knowledge (手続き的知識)
 **【難易度: 中】**
-「まずAを確認し、次にBを行う」という一連のプロセスやワークフローに関する知識です。時間の流れや順序性が重要になります。
 
-- **構造化のゴール**: **Procedural Knowledge Graph (PKG) / Decision Tree**
+「まずAを確認し、次にBを行う」という一連の**プロセス・順序・ワークフロー**に関する知識です。
+時間的順序や状態遷移が重要であり、**作業手順や診断フローの再現** に適しています。
+
+※ 本カテゴリは「どう進めるか（flow）」を定義するものであり、後述の Rule-Based Knowledge（制約・禁止事項）とは役割が異なります。
+
+- **構造化のゴール**: **Procedural Knowledge Graph (PKG) / Decision Tree / Flowchart**
 - **学術的手法・アプローチ**:
   - **Zero-Shot Process Extraction**
-    - 非構造化テキスト（マニュアル等）から、アクション（Action）、対象（Object）、状態遷移（State）を抽出し、プロセスグラフを構築する。
+    - テキストからアクション（Action）、対象（Object）、状態（State）を抽出しプロセスグラフ化
   - **Chain-of-Thought Distillation**
-    - 熟練者の思考プロセス（CoT）をステップごとのルールとして蒸留・固定化する。
+    - 熟練者の思考手順（CoT）を固定的なステップとして蒸留
 
 ### 構造化データの例 (Mermaid: Flowchart)
 ```mermaid
@@ -52,21 +60,27 @@ flowchart TD
     Step2 -- No --> Warning[作業禁止: ロックアウト実施せよ]
 ```
 > **参考文献**:
-> - *Zhang, L., et al. "Reasoning with Procedural Knowledge Graphs." (CL 2023)*
-> - *Sahoo, S. S. "Language Models are Zero-Shot Decision Tree Extractors." (2024)*
+> - Zhang, L., et al. *Reasoning with Procedural Knowledge Graphs.* (CL 2023)
+> - Sahoo, S. S. *Language Models are Zero-Shot Decision Tree Extractors.* (2024)
 
 ---
 
 ## 3. Rule-Based Knowledge (制約・判断ルール)
 **【難易度: 中〜高】**
-「温度がX度を超えたら危険」「操作Yは禁止」といった、静的な制約条件や安全基準に関する知識です。
+
+「温度がX度を超えたら危険」「操作Yは禁止」といった、**静的な制約条件・安全基準・閾値判定**に関する知識です。
+
+Procedural Knowledge が「どう進めるか（flow）」を定義するのに対し、
+Rule-Based Knowledge は **「絶対に違反してはならない制約（constraints）」を定義する** 点が本質的に異なります。
+
+安全・法令・品質保証など、**LLMに判断を委ねるべきでない領域**を明示的に切り出すために不可欠です。
 
 - **構造化のゴール**: **Symbolic Constraints / Logic Rules**
 - **学術的手法・アプローチ**:
   - **Neuro-Symbolic AI**
-    - ニューラルネットワーク（LLM）の柔軟性と、シンボリックAI（ルールエンジン）の厳密性を統合するアプローチ。
-  - **Constrained Decoding (Safe Decoding)**
-    - LLMの出力生成時に、文法規則や論理制約（Guidance, AICI等を使用）を強制し、ルール違反を物理的に防ぐ。
+    - ニューラル（LLM）とシンボリック（ルール）の統合
+  - **Constrained Decoding / Safe Decoding**
+    - 生成時に論理制約を強制し、違反出力を物理的に防止
 
 ### 構造化データの例 (Pseudo-Code: Rule Set)
 ```javascript
@@ -76,22 +90,24 @@ Rule_Safety_01:
 Rule_Operation_02:
   IF (Mode == "Maintenance") THEN (Remote_Control = DISABLED)
 ```
+
 > **参考文献**:
-> - *Garcez, A. D., et al. "Neuro-Symbolic Artificial Intelligence: The State of the Art." (2022)*
-> - *Microsoft Guidance / AICI (Architecture for Interleaved Computation and Inference)*
+> - Garcez, A. D., et al. *Neuro-Symbolic Artificial Intelligence: The State of the Art.* (2022)
+> - Microsoft Guidance / AICI
 
 ---
 
 ## 4. Semantic / Relational Knowledge (意味的知識)
 **【難易度: 高】**
-「部品AはユニットBの一部である」といった、言葉の意味やモノ同士の関係性に関する知識です。
 
-- **構造化のゴール**: **Knowledge Graph (Ontology)**
+「部品AはユニットBの一部」「XはYを必要とする」といった、**概念・属性・関係性**に関する知識です。
+ドメイン全体の構造（製品構成、依存関係、用語体系）を明示化します。
+
+- **構造化のゴール**: **Knowledge Graph / Ontology**
 - **学術的手法・アプローチ**:
-  - **GraphRAG** (Microsoft Research)
-    - テキストから知識グラフを構築し、グラフコミュニティ検出を用いて、単純な検索では見つからない「全体像」や「隠れた繋がり」を回答させる。
-  - **Ontology Learning**
-    - 既存の知識体系（オントロジー）に基づき、テキストからトリプレット（主語-述語-目的語）を抽出する。
+  - **GraphRAG**
+  - **Ontology Engineering / Ontology Learning**
+  - トリプレット抽出（Subject–Predicate–Object）
 
 ### 構造化データの例 (Mermaid: Knowledge Graph)
 ```mermaid
@@ -101,21 +117,24 @@ graph LR
     E3 -- has_spec --> E4[ギア比 1:50]
 ```
 > **参考文献**:
-> - *Edge, D., et al. "From Local to Global: A Graph RAG Approach to Query-Focused Summarization." (ArXiv 2024)*
-> - *Pan, J. Z., et al. "Large Language Models and Knowledge Graphs: Opportunities and Challenges." (2024)*
+> - Edge, D., et al. *Graph RAG Approach to Query-Focused Summarization.* (ArXiv 2024)
+> - Pan, J. Z., et al. *Large Language Models and Knowledge Graphs.* (2024)
 
 ---
 
 ## 5. Causal Knowledge (因果的知識)
 **【難易度: 最高】**
-「Aが起きるとBになる」という因果関係やメカニズムに関する知識です。介入（Action）に対する結果を予測するために必要です。
+
+「Aが起きるとBになる」「この操作をすると結果が変わる」といった、**メカニズムや介入可能な因果関係**に関する知識です。
+根本原因分析（RCA）や「なぜ？」への説明、介入効果の予測に利用されます。
+
+※ 因果グラフは Knowledge Graph の一種であり、関係の中でも **方向性と介入可能性（intervention）を明示した特殊化モデル** とみなせます。
 
 - **構造化のゴール**: **Causal DAG (Directed Acyclic Graph)**
 - **学術的手法・アプローチ**:
   - **Causal Discovery with LLMs**
-    - ドメイン知識を持つLLMを用いて、変数間の因果グラフ（A→B）を推定・構築する。
-  - **Counterfactual Reasoning (反事実的推論)**
-    - 「もしXしていなかったらYはどうなっていたか？」を推論し、根本原因分析（RCA）を行う。
+  - **Counterfactual Reasoning**
+  - **Structural Causal Models (SCM)**
 
 ### 構造化データの例 (Mermaid: Causal DAG)
 ```mermaid
@@ -123,10 +142,10 @@ graph TD
     Root[フィルタ目詰まり] --> Cause[吸気量低下]
     Cause --> Symptom1[燃焼温度上昇]
     Cause --> Symptom2[黒煙発生]
-    
-    %% 介入の推論
     Action[フィルタ清掃] -- suppresses --> Root
 ```
 > **参考文献**:
-> - *Kiciman, E., et al. "Causal Reasoning and Large Language Models: Opening a New Frontier for Causality." (ArXiv 2023)*
-> - *Willig, M., et al. "Can Large Language Models Infer Causality?" (ArXiv 2023)*
+> - Kiciman, E., et al. *Causal Reasoning and Large Language Models.* (ArXiv 2023)
+> - Willig, M., et al. *Can Large Language Models Infer Causality?* (ArXiv 2023)
+
+---
