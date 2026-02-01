@@ -2,96 +2,105 @@
 
 本ドキュメントは、専門家が持つ「暗黙知 (Tacit Knowledge)」を生成AIに効果的に学習・参照させるために、**「どのような種類の知識を、どのような形式に構造化すべきか」**という観点で分類・整理したものです。
 
-実務上、導入・実行の難易度が低い（平易な）順に記載しています。
+ご指定の5つのカテゴリ順（事例、手順、ルール、意味、因果）に構成しています。
 
 ---
 
-## 1. エピソード知識の構造化 (Episodic Knowledge Structuring)
-**【難易度: 低】**
-「過去にこんな事例があった」という具体的な経験知です。個別の事例から類似の状況を解決するための知識であり、既存のログやチケットデータを整理するだけで始められるため、最も着手しやすい領域です。
+## 1. Episodic Knowledge (事例・経験知)
+「過去にこういう状況でこう対処した」という個別のエピソード記憶です。抽象化されていない生の経験データであり、類似事例の検索に利用されます。
 
-- **構造化のゴール**: **構造化事例フォーマット (Structured Case Frame)**
-  - **Case-Based Reasoning (CBR)** の考え方に基づき、{状況, 問題, 解決策, 結果} のセットで保存します。
-- **学術的アプローチ**:
-  - **Case Retrieval & Adaptation**: 類似事例を検索し、現在の状況に合わせて解決策を修正・適用する。
+- **構造化の手法**: **Case-Based Reasoning (CBR)**
+  - 事例を {Situation, Problem, Solution, Outcome} のフレームで保存する。
+- **データ形式**: 構造化ログ、JSON形式の事例レコード。
+- **活用イメージ**: 「似たようなトラブルが過去になかったか？」を検索し、解決策を借用する。
 
-### 構造化データの例 (JSON: 構造化ケース)
+### 構造化データの例 (JSON)
 ```json
 {
-  "case_id": "case_2023_001",
-  "context": {
-    "situation": "セキュリティアップデート後の起動不能",
-    "environment": "OS: Linux, Kernel: 5.15"
-  },
-  "problem": "ブートローダーで停止し、ログイン画面に到達しない",
-  "solution": "旧カーネルでの起動を選択し、グラフィックドライバを再インストールした",
-  "outcome": "正常起動を確認。ドライバの非互換性が原因と判明。"
+  "case_id": "EVT_2023_998",
+  "situation": "気温35度以上の環境で、連続稼働時間が8時間を超えた",
+  "problem": "油圧シリンダーの動作遅延が発生",
+  "solution": "作動油クーラーのファンを確認し、清掃を実施した",
+  "outcome": "油温が低下し、動作速度が正常化した"
 }
 ```
 
 ---
 
-## 2. 手続き的知識の構造化 (Procedural Knowledge Structuring)
-**【難易度: 中】**
-「どういう手順で判断するか」「Yes/Noの分岐基準は何か」という、専門家の思考プロセスに関する知識です。マニュアルやSOP（標準作業手順書）として既に明文化されていることが多く、それをデジタルなルールに変換する作業が主となります。
+## 2. Procedural Knowledge (手続き的知識)
+「まずAを確認し、次にBを行う」という一連のプロセスやワークフローに関する知識です。時間の流れや順序性が重要になります。
 
-- **構造化のゴール**: **決定木 (Decision Tree) / フローチャート**
-  - 条件分岐論理（IF-THENルール）として明確に書き下します。
-- **学術的アプローチ**:
-  - **Zero-Shot Decision Tree Extraction**: LLMの推論能力を利用して、テキストから決定木を生成する。
-  - **Chain-of-Thought Distillation**: 思考のステップをルールとして固定化する。
+- **構造化の手法**: **Decision Tree / Flowchart**
+  - 標準作業手順（SOP）を分岐図として書き下す。
+- **データ形式**: Mermaidフローチャート、BPMN。
+- **活用イメージ**: 初心者でも迷わないように、診断や操作のステップバイステップガイドを提示する。
 
-### 構造化データの例 (Mermaid: フローチャート)
+### 構造化データの例 (Mermaid: Flowchart)
 ```mermaid
 flowchart TD
-    Start[開始: 承認プロセス] --> Q1{金額 < 100万円?}
-    Q1 -- Yes --> A[課長承認]
-    Q1 -- No --> Q2{緊急案件か?}
-    Q2 -- Yes --> B[部長承認 + 事後報告]
-    Q2 -- No --> C[取締役会決議]
+    Start[点検開始] --> Step1[電源OFF確認]
+    Step1 --> Step2{ロックアウト完了?}
+    Step2 -- Yes --> Step3[カバー取り外し]
+    Step2 -- No --> Warning[作業禁止: ロックアウト実施せよ]
 ```
 > **参考文献**: *Sahoo, S. S., et al. "Language Models are Zero-Shot Decision Tree Extractors." (2024)*
 
 ---
 
-## 3. 意味的知識の構造化 (Semantic Knowledge Structuring)
-**【難易度: 高】**
-専門家が持つ「言葉の定義」「概念の包含関係」「製品構成」などの知識です。用語間の網羅的な繋がり（ネットワーク）を定義する必要があり、設計（オントロジー構築）に専門的なスキルと多くの工数を要します。
+## 3. Rule-Based Knowledge (制約・判断ルール)
+「温度がX度を超えたら危険」「このモードでは操作Yは禁止」といった、静的な制約条件や安全基準に関する知識です。手順（フロー）とは異なり、常に満たすべき条件として定義されます。
 
-- **構造化のゴール**: **ナレッジグラフ (Knowledge Graph)**
-  - エンティティ（ノード）と関係性（エッジ）のネットワークとして表現します。
-- **学術的アプローチ**:
-  - **GraphRAG**: LLMを用いて非構造化テキストからグラフ構造を抽出し、検索に利用する。
-  - **Ontology Engineering**: 厳密な概念体系（クラス、プロパティ）を設計する。
+- **構造化の手法**: **IF-THEN Rules / Thresholds**
+  - 明確な閾値や禁止事項を論理式として定義する。
+- **データ形式**: ルールセット、バリデーションロジック。
+- **活用イメージ**: AIが生成した回答が安全基準に抵触していないかの監査（Guardrails）や、アラート判定。
 
-### 構造化データの例 (Mermaid: エンティティ関係図)
+### 構造化データの例 (Pseudo-Code: Rule Set)
+```javascript
+Rule_Safety_01:
+  IF (Hydraulic_Pressure > 25.0 MPa) THEN (Status = DANGER)
+
+Rule_Operation_02:
+  IF (Mode == "Maintenance") THEN (Remote_Control = DISABLED)
+```
+
+---
+
+## 4. Semantic / Relational Knowledge (意味的知識)
+「部品AはユニットBの一部である」「用語Xと用語Yは同義である」といった、言葉の意味やモノ同士の関係性に関する知識です。
+
+- **構造化の手法**: **Knowledge Graph / Ontology**
+  - エンティティとリレーションによるネットワーク構築。
+- **データ形式**: RDFトリプル, Property Graph (Mermaid/Neo4j)。
+- **活用イメージ**: 表記揺れの吸収や、関連部品の特定（GraphRAGによる多段階推論）。
+
+### 構造化データの例 (Mermaid: Knowledge Graph)
 ```mermaid
 graph LR
-    C1[Concept: Project-Alpha] -- is_a --> C2[Type: Internal Tool]
-    C1 -- utilizes --> T1[Tool: React.js]
-    T1 -- requires --> V1[Version: 18.0+]
-    C1 -- managed_by --> D1[Dept: Engineering]
+    E1[サーボモーター] -- is_part_of --> E2[ロボットアーム関節]
+    E2 -- requires_part --> E3[減速機]
+    E3 -- has_spec --> E4[ギア比 1:50]
 ```
 > **参考文献**: *Edge, D., et al. "From Local to Global: A Graph RAG Approach to Query-Focused Summarization." (2024)*
 
 ---
 
-## 4. 因果的知識の構造化 (Causal Knowledge Structuring)
-**【難易度: 最高】**
-「なぜそれが起きたのか」「Aを変えるとBにどう影響するか」というメカニズムや因果関係に関する知識です。目に見えない関係性をモデル化する必要があり、正解の検証も難しいため、最も高度な取り組みとなります。
+## 5. Causal Knowledge (因果的知識)
+「Aが起きるとBになる」「Bの原因はCである」という因果関係やメカニズムに関する知識です。相関関係ではなく、介入（Action）に対する結果を予測するために必要です。
 
-- **構造化のゴール**: **因果グラフ (Causal DAG / Directed Acyclic Graph)**
-  - 事象間の因果の方向と強さを定義します。
-- **学術的アプローチ**:
-  - **Causal Discovery**: テキストデータや観測データから因果構造を推定する。
-  - **Counterfactual Reasoning**: 「もし〜だったら」という反事実的な問いに対する推論を支援する。
+- **構造化の手法**: **Causal DAG (Directed Acyclic Graph) / Counterfactuals**
+  - 原因と結果の方向性を有向グラフで定義する。
+- **データ形式**: 因果ダイアグラム。
+- **活用イメージ**: 根本原因分析（Why-Why分析）や、「もし設定を変えたらどうなるか」のシミュレーション。
 
-### 構造化データの例 (Mermaid: 因果チェーン)
+### 構造化データの例 (Mermaid: Causal DAG)
 ```mermaid
 graph TD
-    Cause1[原因: サーバー負荷増] --> Event[結果: 応答遅延]
-    Cause2[原因: DBロック競合] --> Event
-    Root1[真因: キャンペーンアクセス集中] --> Cause1
-    Root2[真因: バッチ処理の設計ミス] --> Cause2
+    Root[フィルタ目詰まり] --> Cause[吸気量低下]
+    Cause --> Symptom1[燃焼温度上昇]
+    Cause --> Symptom2[黒煙発生]
+    
+    %% 介入の推論
+    Action[フィルタ清掃] -- suppresses --> Root
 ```
 > **参考文献**: *Kiciman, E., et al. "Causal Reasoning and Large Language Models." (2023)*
