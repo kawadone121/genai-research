@@ -2,7 +2,7 @@
 
 本ドキュメントは、専門家が持つ「暗黙知 (Tacit Knowledge)」を生成AIに効果的に学習・参照させるために、**「どのような種類の知識を、どのような形式に構造化すべきか」**という観点で分類・整理したものです。
 
-実務上の実行難易度順に、具体的な**学術的手法名**と**データ構造**を記載しています。
+実務上の実行難易度順に、具体的な**学術的手法名**と**データ構造**、および**活用事例**を記載しています。
 
 ---
 
@@ -18,6 +18,14 @@
     - LLMの文脈理解力を用いて、事例検索（Retrieval）と現在状況への適用（Adaptation）を行う。
   - **Neural CBR**
     - 類似度計算や適応をニューラルモデルで高度化する拡張形。
+
+### 活用事例
+- **建設現場の安全管理**:
+  - **東洋建設 (K-SAFE)**: 過去の労働災害事例やヒヤリハット報告をRAGで検索可能にし、現場特有の状況に応じた安全指導事項を自動提案。
+    - [【東洋建設】統合検索プラットフォーム 「TOYO ChatGPT RAG適用版」を導入 (PR TIMES)](https://prtimes.jp/main/html/rd/p/000000057.000107545.html)
+- **ヘルプデスク業務**:
+  - **LINEヤフー**: 社内問い合わせ対応において過去のチケットログをRAGで活用し、約98%の正答率を達成。
+    - [LINEヤフー、社内向け独自業務効率化ツール「SeekAI」を全従業員に導入 (PR TIMES)](https://prtimes.jp/main/html/rd/p/000000188.000129774.html)
 
 ### 構造化データの例 (JSON)
 ```json
@@ -51,6 +59,13 @@
   - **Chain-of-Thought Distillation**
     - 熟練者の思考手順（CoT）を固定的なステップとして蒸留
 
+### 活用事例
+- **技術伝承 (建設業)**:
+  - **熊谷組**: ベテラン技術者のノウハウをナレッジベース化し、若手への技術継承や現場での即時検索に活用（Knowledge Explorer導入）。
+    - [【ナレッジ活用事例】熊谷組：世代間の交流をサポートし、長年培ってきた知見を継承！ (図研プリサイト)](https://www.presight.co.jp/case/example/kumagaigumi.html)
+- **製造業の標準作業手順 (SOP) 自動生成**:
+  - 熟練者の操作ログや非構造化マニュアルから「正しい手順」を抽出し、新人オペレーター向けのデジタルガイドおよびトラブルシューティングフローを自動生成。
+
 ### 構造化データの例 (Mermaid: Flowchart)
 ```mermaid
 flowchart TD
@@ -82,6 +97,13 @@ Rule-Based Knowledge は **「絶対に違反してはならない制約（const
   - **Constrained Decoding / Safe Decoding**
     - 生成時に論理制約を強制し、違反出力を物理的に防止
 
+### 活用事例
+- **金融コンプライアンス & AML (RegTech)**:
+  - **HSBC等**: AIによる不正検知に加え、"Neuro-symbolic AI"的なアプローチを用いて「なぜ不正と判定されたか」を明確なルールに基づいて説明（監査対応）。
+    - [How HSBC fights money launderers with artificial intelligence (Google Cloud Blog)](https://cloud.google.com/blog/topics/financial-services/how-hsbc-fights-money-laundering-with-ai)
+- **産業用制御**:
+  - LLMが生成した制御コマンドに対し、物理的な安全閾値ルールを適用して、危険な動作指令をブロックするガードレール機構。
+
 ### 構造化データの例 (Pseudo-Code: Rule Set)
 ```javascript
 Rule_Safety_01:
@@ -108,6 +130,14 @@ Rule_Operation_02:
   - **GraphRAG**
   - **Ontology Engineering / Ontology Learning**
   - トリプレット抽出（Subject–Predicate–Object）
+
+### 活用事例
+- **データ統合・分析 (Manufacturing Data Hub)**:
+  - **NEC**: 異なるシステムのデータをナレッジグラフで紐付け、データ間の隠れたつながりを発見するリンク予測AI等を開発。
+    - [データ間の隠れたつながりを発見するリンク予測AI (NEC)](https://jpn.nec.com/techrep/journal/g20/n01/200115.html)
+- **サプライチェーン管理**:
+  - **富士通**: サプライチェーン全体をグラフ化し、災害時の影響波及範囲を即座に特定・可視化（Trusted AI）。
+    - [特化型AIエージェントでグローバルサプライチェーンを最適化するソリューション (富士通)](https://pr.fujitsu.com/jp/news/2024/07/14-1.html)
 
 ### 構造化データの例 (Mermaid: Knowledge Graph)
 ```mermaid
@@ -136,6 +166,13 @@ graph LR
   - **Counterfactual Reasoning**
   - **Structural Causal Models (SCM)**
 
+### 活用事例
+- **マーケティング効果検証**:
+  - **電通**: 単なる相関ではなく、交絡因子を考慮した「因果推論」を用いて、広告施策の真の効果（リフト値）を検証。
+    - [因果推論研究者と考える、広告効果の本質 (ウェブ電通報)](https://dentsu-ho.com/articles/7660)
+- **故障予兆・根本原因分析**:
+  - センサーデータ（温度上昇）と故障実績の相関だけでなく、LLMを用いた技術文書解析により「冷却ファン劣化が真因である」という因果構造を特定。
+
 ### 構造化データの例 (Mermaid: Causal DAG)
 ```mermaid
 graph TD
@@ -147,5 +184,3 @@ graph TD
 > **参考文献**:
 > - Kiciman, E., et al. *Causal Reasoning and Large Language Models.* (ArXiv 2023)
 > - Willig, M., et al. *Can Large Language Models Infer Causality?* (ArXiv 2023)
-
----
